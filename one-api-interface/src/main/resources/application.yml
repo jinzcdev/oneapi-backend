@@ -1,0 +1,7 @@
+server:
+  port: 7089
+  servlet:
+    context-path: /oneapi
+spring:
+  application:
+    name: one-api-interface
