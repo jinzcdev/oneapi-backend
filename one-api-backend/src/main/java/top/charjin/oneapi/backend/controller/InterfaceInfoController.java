@@ -39,13 +39,6 @@ public class InterfaceInfoController {
     @Autowired
     private UserService userService;
 
-//    @Autowired
-//    private HeartApiClient heartApiClient;
-//
-//    @Autowired
-//    private StringRedisTemplate stringRedisTemplate;
-
-
     /**
      * 创建
      *
@@ -165,7 +158,7 @@ public class InterfaceInfoController {
     }
 
     /**
-     * 分页获取列表
+     * 分页获取已发布的 API 列表
      *
      * @param interfaceInfoQueryRequest
      * @param request
@@ -192,6 +185,10 @@ public class InterfaceInfoController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         QueryWrapper<InterfaceInfo> queryWrapper = new QueryWrapper<>(interfaceInfoQuery);
+        User loginUser = userService.getLoginUser(request);
+        if (loginUser == null || !loginUser.getUserRole().equals(UserConstant.ADMIN_ROLE)) {
+            queryWrapper.eq("status", 1);
+        }
         queryWrapper.like(StringUtils.isNotBlank(description), "description", description);
         queryWrapper.like(StringUtils.isNotBlank(name), "name", name);
         queryWrapper.orderBy(StringUtils.isNotBlank(sortField),
@@ -206,13 +203,11 @@ public class InterfaceInfoController {
      * 发布
      *
      * @param idRequest
-     * @param request
      * @return
      */
-    @AuthCheck(mustRole = "admin")
-    @PostMapping("/online")
-    public BaseResponse<Boolean> onlineInterfaceInfo(@RequestBody IdRequest idRequest,
-                                                     HttpServletRequest request) {
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @PostMapping("/publish")
+    public BaseResponse<Boolean> publishApi(@RequestBody IdRequest idRequest) {
         if (idRequest == null || idRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -222,32 +217,23 @@ public class InterfaceInfoController {
         if (oldInterfaceInfo == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
-        //判断接口是否可以调用
-//        com.heart.heartapiclientsdk.model.User user = new com.heart.heartapiclientsdk.model.User();
-//        user.setUsername("心跳");
-//        String username = heartApiClient.getUsernameByPost(user);
-//        if (StringUtils.isBlank(username)) {
-//            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "接口验证失败");
-//        }
+
         // 仅本人或管理员可修改
         InterfaceInfo interfaceInfo = new InterfaceInfo();
         interfaceInfo.setId(id);
         interfaceInfo.setStatus(InterfaceInfoStatusEnum.ONLINE.getValue());
-        boolean result = interfaceInfoService.updateById(interfaceInfo);
-        return ResultUtils.success(result);
+        return ResultUtils.success(interfaceInfoService.updateById(interfaceInfo));
     }
 
     /**
      * 下线
      *
      * @param idRequest
-     * @param request
      * @return
      */
-    @AuthCheck(mustRole = "admin")
-    @PostMapping("/offline")
-    public BaseResponse<Boolean> offlineInterfaceInfo(@RequestBody IdRequest idRequest,
-                                                      HttpServletRequest request) {
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @PostMapping("/disable")
+    public BaseResponse<Boolean> disableApi(@RequestBody IdRequest idRequest) {
         if (idRequest == null || idRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -261,8 +247,7 @@ public class InterfaceInfoController {
         InterfaceInfo interfaceInfo = new InterfaceInfo();
         interfaceInfo.setId(id);
         interfaceInfo.setStatus(InterfaceInfoStatusEnum.OFFLINE.getValue());
-        boolean result = interfaceInfoService.updateById(interfaceInfo);
-        return ResultUtils.success(result);
+        return ResultUtils.success(interfaceInfoService.updateById(interfaceInfo));
     }
 
     /**
