@@ -11,5 +11,8 @@
     <modules>
         <module>one-api-backend</module>
         <module>one-api-common</module>
+        <module>one-api-interface</module>
+        <module>one-api-client-sdk</module>
+        <module>one-api-gateway</module>
     </modules>
 </project>

@@ -14,7 +14,8 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>one-api-backend</name>
     <properties>
-        <java.version>17</java.version>
+        <java.version>11</java.version>
+        <dubbo.version>3.2.4</dubbo.version>
     </properties>
     <dependencies>
         <dependency>
@@ -90,11 +91,14 @@
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
+
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>8.0.33</version>
             <scope>runtime</scope>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
@@ -115,6 +119,26 @@
             <groupId>top.charjin</groupId>
             <artifactId>one-api-common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-spring-boot-starter</artifactId>
+            <version>${dubbo.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.dubbo/dubbo-registry-nacos -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-registry-nacos</artifactId>
+            <version>${dubbo.version}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>top.charjin</groupId>
+            <artifactId>one-api-client-sdk</artifactId>
+            <version>0.0.1</version>
         </dependency>
     </dependencies>
 

@@ -59,3 +59,18 @@ mybatis-plus:
       logic-delete-value: 1 # 逻辑已删除值（默认为 1）
       logic-not-delete-value: 0 # 逻辑未删除值（默认为 0）
 
+
+dubbo:
+  application:
+    name: dubbo-provider
+  protocol:
+    name: dubbo
+    port: -1
+  registry:
+    address: nacos://localhost:8848
+
+#    zookeeper://${zookeeper.address:127.0.0.1}:2181
+
+#dubbo:
+#  registry:
+#    address: nacos://localhost:8848

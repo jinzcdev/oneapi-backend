@@ -19,5 +19,5 @@ public class InterfaceInfoInvokeRequest implements Serializable {
     /**
      * 请求参数
      */
-    private String userRequestParams;
+    private String requestParams;
 }

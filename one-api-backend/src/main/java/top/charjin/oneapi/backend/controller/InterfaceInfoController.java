@@ -1,6 +1,8 @@
 package top.charjin.oneapi.backend.controller;
 
 
+import cn.hutool.http.HttpResponse;
+import cn.hutool.http.HttpStatus;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
@@ -14,10 +16,13 @@ import top.charjin.oneapi.backend.constant.CommonConstant;
 import top.charjin.oneapi.backend.constant.UserConstant;
 import top.charjin.oneapi.backend.exception.BusinessException;
 import top.charjin.oneapi.backend.model.dto.interfaceinfo.InterfaceInfoAddRequest;
+import top.charjin.oneapi.backend.model.dto.interfaceinfo.InterfaceInfoInvokeRequest;
 import top.charjin.oneapi.backend.model.dto.interfaceinfo.InterfaceInfoQueryRequest;
 import top.charjin.oneapi.backend.model.dto.interfaceinfo.InterfaceInfoUpdateRequest;
 import top.charjin.oneapi.backend.service.InterfaceInfoService;
 import top.charjin.oneapi.backend.service.UserService;
+import top.charjin.oneapi.clientsdk.client.OneApiClient;
+import top.charjin.oneapi.clientsdk.exception.IllegalUrlException;
 import top.charjin.oneapi.common.model.entity.InterfaceInfo;
 import top.charjin.oneapi.common.model.entity.User;
 import top.charjin.oneapi.common.model.enums.InterfaceInfoStatusEnum;
@@ -26,6 +31,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static top.charjin.oneapi.backend.constant.UserConstant.USER_LOGIN_STATE;
 
 
 @RestController
@@ -257,14 +264,11 @@ public class InterfaceInfoController {
      * @param request
      * @return
      */
-
-    /*
     @PostMapping("/invoke")
-    public BaseResponse<Object> invokeInterfaceInfo(@RequestBody InterfaceInfoInvokeRequest interfaceInfoInvokeRequest,
+    public BaseResponse<String> invokeInterfaceInfo(@RequestBody InterfaceInfoInvokeRequest interfaceInfoInvokeRequest,
                                                     HttpServletRequest request) {
-        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-        System.out.println(request.getSession().getId());
-        User currentUser = (User) userObj;
+        User currentUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
+
         if (currentUser == null || currentUser.getId() == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
@@ -272,45 +276,52 @@ public class InterfaceInfoController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         Long id = interfaceInfoInvokeRequest.getId();
-        String userRequestParams = interfaceInfoInvokeRequest.getUserRequestParams();
-//        WeatherParams weatherParams = JSON.parseObject(userRequestParams, WeatherParams.class);
-//        if(String.valueOf(weatherParams.getCity())==null){
-//            throw new BusinessException(50001,"未输入城市！");
-//        }
+        String requestParams = interfaceInfoInvokeRequest.getRequestParams();
+
         // 判断是否存在
-        InterfaceInfo oldInterfaceInfo = interfaceInfoService.getById(id);
-        if (oldInterfaceInfo == null) {
+        InterfaceInfo interfaceInfo = interfaceInfoService.getById(id);
+        if (interfaceInfo == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
-        if (oldInterfaceInfo.getStatus() == InterfaceInfoStatusEnum.OFFLINE.getValue()) {
+        if (interfaceInfo.getStatus() == InterfaceInfoStatusEnum.OFFLINE.getValue()) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口已关闭");
         }
-        String url = oldInterfaceInfo.getUrl();
+
         User loginUser = userService.getLoginUser(request);
+        // 获取用户的 ak 与 sk
         String accessKey = loginUser.getAccessKey();
         String secretKey = loginUser.getSecretKey();
-        HeartApiClient apiClient = new HeartApiClient(accessKey, secretKey);
-        apiClient.setGATEWAY_HOST("http://localhost:8090");
-        //com.heart.heartapiclientsdk.model.User user = JSONUtil.toBean(userRequestParams, com.heart.heartapiclientsdk.model.User.class);
-        if (id == 2) {
-            WeatherParams weatherParams = JSON.parseObject(userRequestParams, WeatherParams.class);
-            String cacheRedis = stringRedisTemplate.opsForValue()
-                    .get(weatherParams.getCity() + weatherParams.getExtensions());
-            if (cacheRedis != null) {
-                new Thread(() -> {
-                    String parameters = JSON.toJSONString(weatherParams);
-                    apiClient.onlineInvoke(parameters, "/api/weather/weatherInfo");
-                }).start();
-                return ResultUtils.success(cacheRedis);
+
+        String url = interfaceInfo.getUrl();
+        String requestMethod = interfaceInfo.getMethod();
+        OneApiClient apiClient = new OneApiClient(accessKey, secretKey);
+
+        try {
+            // todo 此处的 GET 与 POST 应该是枚举类型，避免硬编码
+            // 根据接口的请求方式调用对应的方法
+            if (requestMethod.equals("GET")) {
+                try (HttpResponse response = apiClient.doGetWithEncryptedHeader(url + "?" + requestParams)) {
+                    if (response.getStatus() == HttpStatus.HTTP_OK) {
+                        return ResultUtils.success(response.body());
+                    }
+                    return ResultUtils.error(ErrorCode.FORBIDDEN_ERROR, response.body());
+                }
             }
-            String result = apiClient.getWeatherInfo(weatherParams);
-            return ResultUtils.success(result);
+            if (requestMethod.equals("POST")) {
+                try (HttpResponse response = apiClient.doPostWithEncryptedHeader(requestParams, url)) {
+                    if (response.getStatus() == HttpStatus.HTTP_OK) {
+                        return ResultUtils.success(response.body());
+                    }
+                    return ResultUtils.error(ErrorCode.FORBIDDEN_ERROR, response.body());
+                }
+            }
+        } catch (IllegalUrlException e) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, e.getMessage());
         }
-        String usernameByPost = apiClient.onlineInvoke(userRequestParams, url);
-        return ResultUtils.success(usernameByPost);
+        return ResultUtils.error(ErrorCode.PARAMS_ERROR, "请求方法有误！");
     }
-    
-    */
+
+
     @GetMapping("/interfaceNameList")
     public BaseResponse<Map> interfaceNameList() {
         List<InterfaceInfo> list = interfaceInfoService.list();

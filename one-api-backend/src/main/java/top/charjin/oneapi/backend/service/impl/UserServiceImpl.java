@@ -1,12 +1,13 @@
 package top.charjin.oneapi.backend.service.impl;
 
+import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 import top.charjin.oneapi.backend.common.ErrorCode;
 import top.charjin.oneapi.backend.exception.BusinessException;
@@ -15,6 +16,8 @@ import top.charjin.oneapi.backend.model.enums.UserRoleEnum;
 import top.charjin.oneapi.backend.model.vo.UserVO;
 import top.charjin.oneapi.backend.service.UserService;
 import top.charjin.oneapi.common.model.entity.User;
+import top.charjin.oneapi.common.model.vo.AuthUserVO;
+import top.charjin.oneapi.common.service.UserAuthService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -26,14 +29,14 @@ import static top.charjin.oneapi.backend.constant.UserConstant.USER_LOGIN_STATE;
 /**
  * 用户服务实现
  */
-@Service
 @Slf4j
-public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+@DubboService(interfaceClass = UserAuthService.class)
+public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService, UserAuthService {
 
     /**
      * 盐值，混淆密码
      */
-    private static final String SALT = "yupi";
+    private static final String SALT = "oneapi";
 
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
@@ -61,10 +64,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             }
             // 2. 加密
             String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
-            // 3. 插入数据
+
+            // 3. 生成 accessKey 和 secretKey
+            String accessKey = DigestUtils.md5DigestAsHex((SALT + userAccount + RandomUtil.randomNumbers(5)).getBytes());
+            String secretKey = DigestUtils.md5DigestAsHex((SALT + userAccount + RandomUtil.randomNumbers(5)).getBytes());
+
+            // 4. 插入数据
             User user = new User();
             user.setUserAccount(userAccount);
             user.setUserPassword(encryptPassword);
+            user.setAccessKey(accessKey);
+            user.setSecretKey(secretKey);
+
             boolean saveResult = this.save(user);
             if (!saveResult) {
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
@@ -112,8 +123,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public User getLoginUser(HttpServletRequest request) {
         // 先判断是否已登录
-        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-        User currentUser = (User) userObj;
+        User currentUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
         if (currentUser == null || currentUser.getId() == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
@@ -135,8 +145,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public User getLoginUserPermitNull(HttpServletRequest request) {
         // 先判断是否已登录
-        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-        User currentUser = (User) userObj;
+        User currentUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
         if (currentUser == null || currentUser.getId() == null) {
             return null;
         }
@@ -207,5 +216,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return userList.stream().map(this::getUserVO).collect(Collectors.toList());
     }
 
-
+    @Override
+    public AuthUserVO getAuthUser(String accessKey) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("accessKey", accessKey);
+        User user = this.getOne(queryWrapper);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "accessKey不存在");
+        }
+        AuthUserVO authUser = new AuthUserVO();
+        authUser.setId(user.getId());
+        authUser.setSecretKey(user.getSecretKey());
+        return authUser;
+    }
 }
