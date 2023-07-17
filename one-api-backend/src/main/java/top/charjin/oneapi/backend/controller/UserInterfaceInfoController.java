@@ -20,6 +20,7 @@ import top.charjin.oneapi.backend.exception.BusinessException;
 import top.charjin.oneapi.backend.model.dto.userInterfaceInfo.UserInterfaceInfoAddRequest;
 import top.charjin.oneapi.backend.model.dto.userInterfaceInfo.UserInterfaceInfoQueryRequest;
 import top.charjin.oneapi.backend.model.dto.userInterfaceInfo.UserInterfaceInfoUpdateRequest;
+import top.charjin.oneapi.backend.model.vo.InterfaceInvokeInfoVo;
 import top.charjin.oneapi.backend.service.InterfaceInfoService;
 import top.charjin.oneapi.backend.service.UserInterfaceInfoService;
 import top.charjin.oneapi.backend.service.UserService;
@@ -240,6 +241,13 @@ public class UserInterfaceInfoController {
             selfInterfaceDateVos.add(selfInterfaceDateVo);
         }
         return ResultUtils.success(selfInterfaceDateVos);
+    }
+
+    @GetMapping("/statistics")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<List<InterfaceInvokeInfoVo>> getInterfaceStatistics() {
+        List<InterfaceInvokeInfoVo> invokeInfoVoList = this.userInterfaceInfoService.getInterfaceInvokeInfoVoList();
+        return ResultUtils.success(invokeInfoVoList);
     }
 
 }

@@ -10,11 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import top.charjin.oneapi.backend.common.ErrorCode;
 import top.charjin.oneapi.backend.exception.BusinessException;
 import top.charjin.oneapi.backend.mapper.UserInterfaceInfoMapper;
+import top.charjin.oneapi.backend.model.vo.InterfaceInvokeInfoVo;
 import top.charjin.oneapi.backend.service.InterfaceInfoService;
 import top.charjin.oneapi.backend.service.UserInterfaceInfoService;
 import top.charjin.oneapi.common.model.entity.InterfaceInfo;
 import top.charjin.oneapi.common.model.entity.UserInterfaceInfo;
 import top.charjin.oneapi.common.service.UserInterfaceInvokeService;
+
+import java.util.List;
 
 @DubboService(interfaceClass = UserInterfaceInvokeService.class)
 public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoMapper, UserInterfaceInfo>
@@ -34,6 +37,11 @@ public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoM
         if (userInterfaceInfo.getLeftNum() < 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "剩余次数不能小于0");
         }
+    }
+
+    @Override
+    public List<InterfaceInvokeInfoVo> getInterfaceInvokeInfoVoList() {
+        return baseMapper.selectInterfaceInvokeInfoVoList();
     }
 
     @Override
