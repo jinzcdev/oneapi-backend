@@ -11,7 +11,7 @@ import top.charjin.oneapi.clientsdk.client.OneApiClient;
  */
 @SpringBootTest
 @ActiveProfiles("test")
-class MainApplicationTests {
+class OneApiApplicationTests {
 
 
     @Autowired
