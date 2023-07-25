@@ -9,14 +9,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.DigestUtils;
-import top.charjin.oneapi.common.model.ErrorCode;
 import top.charjin.oneapi.backend.exception.BusinessException;
 import top.charjin.oneapi.backend.mapper.UserMapper;
 import top.charjin.oneapi.backend.model.enums.UserRoleEnum;
-import top.charjin.oneapi.common.model.vo.UserVO;
 import top.charjin.oneapi.backend.service.UserService;
+import top.charjin.oneapi.common.model.ErrorCode;
 import top.charjin.oneapi.common.model.entity.User;
 import top.charjin.oneapi.common.model.vo.AuthUserVO;
+import top.charjin.oneapi.common.model.vo.UserVO;
 import top.charjin.oneapi.common.service.UserAuthService;
 
 import javax.servlet.http.HttpServletRequest;

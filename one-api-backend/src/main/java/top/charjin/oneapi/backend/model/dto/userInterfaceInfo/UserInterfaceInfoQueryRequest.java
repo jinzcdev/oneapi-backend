@@ -9,8 +9,6 @@ import java.io.Serializable;
 
 /**
  * 查询请求
- *
- * @author yupi
  */
 @EqualsAndHashCode()
 @Data
