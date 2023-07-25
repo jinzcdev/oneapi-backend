@@ -1,7 +1,7 @@
-package top.charjin.oneapi.backend.common;
+package top.charjin.oneapi.common.model.request;
 
 import lombok.Data;
-import top.charjin.oneapi.backend.constant.CommonConstant;
+import top.charjin.oneapi.common.constant.CommonConstant;
 
 /**
  * 分页请求

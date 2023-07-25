@@ -1,4 +1,7 @@
-package top.charjin.oneapi.backend.common;
+package top.charjin.oneapi.common.util;
+
+import top.charjin.oneapi.common.model.BaseResponse;
+import top.charjin.oneapi.common.model.ErrorCode;
 
 /**
  * 返回工具类

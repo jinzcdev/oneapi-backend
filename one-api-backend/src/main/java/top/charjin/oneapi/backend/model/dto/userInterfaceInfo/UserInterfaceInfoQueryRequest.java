@@ -3,7 +3,7 @@ package top.charjin.oneapi.backend.model.dto.userInterfaceInfo;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import top.charjin.oneapi.backend.common.PageRequest;
+import top.charjin.oneapi.common.model.request.PageRequest;
 
 import java.io.Serializable;
 

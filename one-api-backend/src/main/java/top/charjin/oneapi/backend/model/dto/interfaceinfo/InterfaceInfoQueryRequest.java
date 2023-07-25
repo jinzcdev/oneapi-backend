@@ -4,7 +4,7 @@ package top.charjin.oneapi.backend.model.dto.interfaceinfo;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import top.charjin.oneapi.backend.common.PageRequest;
+import top.charjin.oneapi.common.model.request.PageRequest;
 import top.charjin.oneapi.common.model.vo.RequestParamsRemarkVO;
 import top.charjin.oneapi.common.model.vo.ResponseParamsRemarkVO;
 

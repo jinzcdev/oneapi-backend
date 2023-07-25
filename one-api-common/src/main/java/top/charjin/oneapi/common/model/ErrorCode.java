@@ -1,4 +1,4 @@
-package top.charjin.oneapi.backend.common;
+package top.charjin.oneapi.common.model;
 
 /**
  * 自定义错误码

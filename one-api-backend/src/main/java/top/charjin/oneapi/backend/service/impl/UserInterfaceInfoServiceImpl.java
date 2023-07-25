@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
-import top.charjin.oneapi.backend.common.ErrorCode;
+import top.charjin.oneapi.common.model.ErrorCode;
 import top.charjin.oneapi.backend.exception.BusinessException;
 import top.charjin.oneapi.backend.mapper.InterfaceInfoMapper;
 import top.charjin.oneapi.backend.mapper.UserInterfaceInfoMapper;

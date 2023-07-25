@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.DigestUtils;
-import top.charjin.oneapi.backend.common.ErrorCode;
+import top.charjin.oneapi.common.model.ErrorCode;
 import top.charjin.oneapi.backend.exception.BusinessException;
 import top.charjin.oneapi.backend.mapper.UserMapper;
 import top.charjin.oneapi.backend.model.enums.UserRoleEnum;

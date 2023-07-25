@@ -10,7 +10,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import top.charjin.oneapi.backend.annotation.AuthCheck;
-import top.charjin.oneapi.backend.common.ErrorCode;
+import top.charjin.oneapi.common.model.ErrorCode;
 import top.charjin.oneapi.backend.exception.BusinessException;
 import top.charjin.oneapi.backend.model.enums.UserRoleEnum;
 import top.charjin.oneapi.backend.service.UserService;

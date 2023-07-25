@@ -3,9 +3,9 @@ package top.charjin.oneapi.backend.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import top.charjin.oneapi.backend.common.BaseResponse;
-import top.charjin.oneapi.backend.common.ErrorCode;
-import top.charjin.oneapi.backend.common.ResultUtils;
+import top.charjin.oneapi.common.model.BaseResponse;
+import top.charjin.oneapi.common.model.ErrorCode;
+import top.charjin.oneapi.common.util.ResultUtils;
 
 /**
  * 全局异常处理器

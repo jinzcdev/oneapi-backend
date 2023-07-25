@@ -1,6 +1,6 @@
 package top.charjin.oneapi.backend.exception;
 
-import top.charjin.oneapi.backend.common.ErrorCode;
+import top.charjin.oneapi.common.model.ErrorCode;
 
 /**
  * 自定义异常类

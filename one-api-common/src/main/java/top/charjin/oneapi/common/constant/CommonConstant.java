@@ -1,4 +1,4 @@
-package top.charjin.oneapi.backend.constant;
+package top.charjin.oneapi.common.constant;
 
 /**
  * 通用常量
