@@ -17,6 +17,6 @@ public class OneApiClientSdkConfig {
 
     @Bean
     public OneApiClient oneApiClient() {
-        return new OneApiClient(accessKey, secretKey);
+        return new OneApiClient(new Credential(accessKey, secretKey));
     }
 }
