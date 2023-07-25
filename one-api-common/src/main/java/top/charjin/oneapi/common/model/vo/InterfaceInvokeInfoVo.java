@@ -1,4 +1,4 @@
-package top.charjin.oneapi.backend.model.vo;
+package top.charjin.oneapi.common.model.vo;
 
 import lombok.Data;
 

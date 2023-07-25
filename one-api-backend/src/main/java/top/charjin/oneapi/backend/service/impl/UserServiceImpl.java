@@ -13,7 +13,7 @@ import top.charjin.oneapi.backend.common.ErrorCode;
 import top.charjin.oneapi.backend.exception.BusinessException;
 import top.charjin.oneapi.backend.mapper.UserMapper;
 import top.charjin.oneapi.backend.model.enums.UserRoleEnum;
-import top.charjin.oneapi.backend.model.vo.UserVO;
+import top.charjin.oneapi.common.model.vo.UserVO;
 import top.charjin.oneapi.backend.service.UserService;
 import top.charjin.oneapi.common.model.entity.User;
 import top.charjin.oneapi.common.model.vo.AuthUserVO;
@@ -66,8 +66,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
 
             // 3. 生成 accessKey 和 secretKey
-            String accessKey = DigestUtils.md5DigestAsHex((SALT + userAccount + RandomUtil.randomNumbers(5)).getBytes());
-            String secretKey = DigestUtils.md5DigestAsHex((SALT + userAccount + RandomUtil.randomNumbers(5)).getBytes());
+            String accessKey = generateKey(userAccount);
+            String secretKey = generateKey(userAccount);
 
             // 4. 插入数据
             User user = new User();
@@ -84,33 +84,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
     }
 
+    private String generateKey(String userAccount) {
+        return DigestUtils.md5DigestAsHex((SALT + userAccount + RandomUtil.randomNumbers(5)).getBytes());
+    }
+
     @Override
     public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
-        // 1. 校验
-        if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
-        }
-        if (userAccount.length() < 4) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号错误");
-        }
-        if (userPassword.length() < 8) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
-        }
-        // 2. 加密
-        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
-        // 查询用户是否存在
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("userAccount", userAccount);
-        queryWrapper.eq("userPassword", encryptPassword);
-        User user = this.baseMapper.selectOne(queryWrapper);
-        // 用户不存在
-        if (user == null) {
-            log.info("user login failed, userAccount cannot match userPassword");
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
-        }
-        // 3. 记录用户的登录态
+        User user = this.checkUserAccountAndPassword(userAccount, userPassword);
+        // 记录用户的登录态
         request.getSession().setAttribute(USER_LOGIN_STATE, user);
-        return this.getUser(user);
+        return user;
     }
 
 
@@ -214,6 +197,48 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return new ArrayList<>();
         }
         return userList.stream().map(this::getUserVO).collect(Collectors.toList());
+    }
+
+    @Override
+    public User checkUserAccountAndPassword(String userAccount, String userPassword) {
+        // 1. 校验
+        if (StringUtils.isAnyBlank(userAccount, userPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
+        }
+        if (userAccount.length() < 4) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号错误");
+        }
+        if (userPassword.length() < 8) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
+        }
+        // 2. 加密
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+        // 查询用户是否存在
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userAccount", userAccount);
+        queryWrapper.eq("userPassword", encryptPassword);
+        User user = this.baseMapper.selectOne(queryWrapper);
+        // 用户不存在
+        if (user == null) {
+            log.info("user login failed, userAccount cannot match userPassword");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
+        }
+        return this.getUser(user);
+    }
+
+    @Override
+    public boolean updateSecretKey(Long id) {
+        User user = this.getById(id);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在");
+        }
+        // 生成新的 accessKey 和 secretKey
+        String userAccount = user.getUserAccount();
+        String accessKey = generateKey(userAccount);
+        String secretKey = generateKey(userAccount);
+        user.setAccessKey(accessKey);
+        user.setSecretKey(secretKey);
+        return this.updateById(user);
     }
 
     @Override

@@ -1,30 +1,35 @@
 package top.charjin.oneapi.backend.model.dto.interfaceinfo;
 
+
 import lombok.Data;
+import top.charjin.oneapi.common.model.vo.RequestParamsRemarkVO;
+import top.charjin.oneapi.common.model.vo.ResponseParamsRemarkVO;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 更新请求
- *
- * @TableName product
  */
 @Data
 public class InterfaceInfoUpdateRequest implements Serializable {
-
     private static final long serialVersionUID = 1L;
     /**
      * 主键
      */
     private Long id;
     /**
-     * 接口名称
+     * 名称
      */
     private String name;
     /**
      * 描述
      */
     private String description;
+    /**
+     * 主机名
+     */
+    private String host;
     /**
      * 接口地址
      */
@@ -33,6 +38,14 @@ public class InterfaceInfoUpdateRequest implements Serializable {
      * 请求参数
      */
     private String requestParams;
+    /**
+     * 请求参数说明
+     */
+    private List<RequestParamsRemarkVO> requestParamsRemark;
+    /**
+     * 响应参数说明
+     */
+    private List<ResponseParamsRemarkVO> responseParamsRemark;
     /**
      * 请求头
      */

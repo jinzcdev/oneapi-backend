@@ -2,7 +2,7 @@ package top.charjin.oneapi.backend.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import top.charjin.oneapi.backend.model.vo.InterfaceInvokeInfoVo;
+import top.charjin.oneapi.common.model.vo.InterfaceInvokeInfoVo;
 import top.charjin.oneapi.common.model.entity.UserInterfaceInfo;
 
 import java.util.List;

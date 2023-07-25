@@ -13,7 +13,7 @@
         <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
         <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
-        <result property="isDelete" column="idDelete" jdbcType="TINYINT"/>
+        <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
@@ -22,7 +22,7 @@
         createTime,updateTime,idDelete
     </sql>
     <select id="selectInterfaceInvokeInfoVoList"
-            resultType="top.charjin.oneapi.backend.model.vo.InterfaceInvokeInfoVo">
+            resultType="top.charjin.oneapi.common.model.vo.InterfaceInvokeInfoVo">
         select t1.id                    as id,
                name,
                ifnull(sum(totalNum), 0) as totalNum

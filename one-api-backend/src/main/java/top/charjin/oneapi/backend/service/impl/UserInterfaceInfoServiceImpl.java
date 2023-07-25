@@ -9,12 +9,12 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import top.charjin.oneapi.backend.common.ErrorCode;
 import top.charjin.oneapi.backend.exception.BusinessException;
+import top.charjin.oneapi.backend.mapper.InterfaceInfoMapper;
 import top.charjin.oneapi.backend.mapper.UserInterfaceInfoMapper;
-import top.charjin.oneapi.backend.model.vo.InterfaceInvokeInfoVo;
-import top.charjin.oneapi.backend.service.InterfaceInfoService;
 import top.charjin.oneapi.backend.service.UserInterfaceInfoService;
 import top.charjin.oneapi.common.model.entity.InterfaceInfo;
 import top.charjin.oneapi.common.model.entity.UserInterfaceInfo;
+import top.charjin.oneapi.common.model.vo.InterfaceInvokeInfoVo;
 import top.charjin.oneapi.common.service.UserInterfaceInvokeService;
 
 import java.util.List;
@@ -22,9 +22,9 @@ import java.util.List;
 @DubboService(interfaceClass = UserInterfaceInvokeService.class)
 public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoMapper, UserInterfaceInfo>
         implements UserInterfaceInfoService, UserInterfaceInvokeService {
-
+    
     @Autowired
-    private InterfaceInfoService interfaceInfoService;
+    private InterfaceInfoMapper interfaceInfoMapper;
 
     @Override
     public void validUserInterfaceInfo(UserInterfaceInfo userInterfaceInfo, boolean isAdd) {
@@ -49,10 +49,11 @@ public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoM
         if (StringUtils.isAnyBlank(url, method)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
+
         LambdaQueryWrapper<InterfaceInfo> lqw = new LambdaQueryWrapper<>();
         lqw.eq(InterfaceInfo::getUrl, url)
                 .eq(InterfaceInfo::getMethod, method);
-        return interfaceInfoService.getOne(lqw);
+        return interfaceInfoMapper.selectOne(lqw);
     }
 
     @Override

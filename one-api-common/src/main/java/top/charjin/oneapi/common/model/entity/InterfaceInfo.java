@@ -22,7 +22,7 @@ public class InterfaceInfo implements Serializable {
     @TableId(type = IdType.AUTO)
     private Long id;
     /**
-     * 接口名称
+     * 名称
      */
     private String name;
     /**
@@ -34,9 +34,21 @@ public class InterfaceInfo implements Serializable {
      */
     private String url;
     /**
+     * 主机名
+     */
+    private String host;
+    /**
      * 请求参数
      */
     private String requestParams;
+    /**
+     * 请求参数说明
+     */
+    private String requestParamsRemark;
+    /**
+     * 响应参数说明
+     */
+    private String responseParamsRemark;
     /**
      * 请求头
      */
@@ -50,18 +62,13 @@ public class InterfaceInfo implements Serializable {
      */
     private Integer status;
     /**
-     * 请求类型（GET, POST）
+     * 请求类型
      */
     private String method;
     /**
      * 创建人
      */
     private Long userId;
-
-    /**
-     * 完整的接口uri
-     */
-    private String uri;
     /**
      * 创建时间
      */

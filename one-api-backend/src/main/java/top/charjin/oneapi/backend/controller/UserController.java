@@ -9,15 +9,12 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import top.charjin.oneapi.backend.annotation.AuthCheck;
-import top.charjin.oneapi.backend.common.BaseResponse;
-import top.charjin.oneapi.backend.common.DeleteRequest;
-import top.charjin.oneapi.backend.common.ErrorCode;
-import top.charjin.oneapi.backend.common.ResultUtils;
+import top.charjin.oneapi.backend.common.*;
 import top.charjin.oneapi.backend.constant.UserConstant;
 import top.charjin.oneapi.backend.exception.BusinessException;
 import top.charjin.oneapi.backend.exception.ThrowUtils;
 import top.charjin.oneapi.backend.model.dto.user.*;
-import top.charjin.oneapi.backend.model.vo.UserVO;
+import top.charjin.oneapi.common.model.vo.UserVO;
 import top.charjin.oneapi.backend.service.UserService;
 import top.charjin.oneapi.common.model.entity.User;
 
@@ -81,6 +78,25 @@ public class UserController {
         return ResultUtils.success(User);
     }
 
+    /**
+     * 验证用户账户和密码
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/check")
+    public BaseResponse<User> checkUserAccountAndPassword(@RequestBody UserLoginRequest request) {
+        if (request == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        String userAccount = request.getUserAccount();
+        String userPassword = request.getUserPassword();
+        if (StringUtils.isAnyBlank(userAccount, userPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = userService.checkUserAccountAndPassword(userAccount, userPassword);
+        return ResultUtils.success(user);
+    }
 
     /**
      * 用户注销
@@ -109,9 +125,6 @@ public class UserController {
         return ResultUtils.success(userService.getUser(user));
     }
 
-    // endregion
-
-    // region 增删改查
 
     /**
      * 创建用户
@@ -232,5 +245,11 @@ public class UserController {
         return ResultUtils.success(userVOPage);
     }
 
-
+    @PostMapping("/update/secret_key")
+    public BaseResponse<Boolean> updateSecretKey(@RequestBody IdRequest idRequest) {
+        if (idRequest == null || idRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        return ResultUtils.success(userService.updateSecretKey(idRequest.getId()));
+    }
 }

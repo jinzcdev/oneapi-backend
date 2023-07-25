@@ -1,7 +1,7 @@
 package top.charjin.oneapi.backend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import top.charjin.oneapi.backend.model.vo.UserVO;
+import top.charjin.oneapi.common.model.vo.UserVO;
 import top.charjin.oneapi.common.model.entity.User;
 
 import javax.servlet.http.HttpServletRequest;
@@ -97,4 +97,7 @@ public interface UserService extends IService<User> {
     List<UserVO> getUserVO(List<User> userList);
 
 
+    User checkUserAccountAndPassword(String userAccount, String userPassword);
+
+    boolean updateSecretKey(Long id);
 }
