@@ -1,10 +1,17 @@
 package top.charjin.oneapi.openinterface.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import top.charjin.oneapi.common.model.BaseResponse;
+import top.charjin.oneapi.common.model.ErrorCode;
+import top.charjin.oneapi.common.util.ResultUtils;
+import top.charjin.oneapi.openinterface.exception.BusinessException;
+import top.charjin.oneapi.openinterface.model.vo.CartoonAvatarUrlVO;
+import top.charjin.oneapi.openinterface.model.vo.UserAvatarUrlVO;
+import top.charjin.oneapi.openinterface.service.AvatarService;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.IOException;
 
 /**
  * 头像接口
@@ -14,10 +21,19 @@ import java.net.URL;
 @Slf4j
 public class AvatarController {
 
+    @Autowired
+    AvatarService avatarService;
+
     @GetMapping("/cartoon")
-    public String getCartoonAvatarUrl() {
-        String avatarUrl = "https://www.loliapi.com/acg/pp/";
-        return getRedirectUrl(avatarUrl);
+    public BaseResponse<CartoonAvatarUrlVO> getCartoonAvatarUrl() {
+        String avatarUrl = "";
+        try {
+            avatarUrl = avatarService.getCartoonAvatarUrl();
+            System.out.println(avatarUrl);
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "接口地址失效");
+        }
+        return ResultUtils.success(new CartoonAvatarUrlVO(avatarUrl));
     }
 
     /**
@@ -25,25 +41,17 @@ public class AvatarController {
      * @return AvatarUrl
      */
     @GetMapping("/user")
-    public String getUserAvatarUrl(@RequestParam String gender) {
-        String avatarUrl = "https://xsgames.co/randomusers/avatar.php?g=" + gender;
-        return getRedirectUrl(avatarUrl);
-    }
-
-    private String getRedirectUrl(String url) {
-        try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-            connection.setInstanceFollowRedirects(false); // 禁止自动重定向
-            int responseCode = connection.getResponseCode(); // 获取响应码
-            if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
-                    || responseCode == HttpURLConnection.HTTP_MOVED_PERM) {
-                return connection.getHeaderField("Location");
-            } else {
-                return url;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("请求异常!");
+    public BaseResponse<UserAvatarUrlVO> getUserAvatarUrl(@RequestParam String gender) {
+        if (!gender.equals("male") && !gender.equals("female")) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "gender 只能为 male 或 female");
         }
+        String avatarUrl = "";
+        try {
+            avatarUrl = avatarService.getUserAvatarUrl(gender);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return ResultUtils.success(new UserAvatarUrlVO(avatarUrl));
     }
 
     @ExceptionHandler(Exception.class)
