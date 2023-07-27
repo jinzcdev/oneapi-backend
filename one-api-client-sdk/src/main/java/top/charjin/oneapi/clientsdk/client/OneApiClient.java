@@ -32,7 +32,7 @@ public class OneApiClient extends AbstractClient {
         try {
             Type type = new TypeToken<JsonResponseModel<GenerateCartoonAvatarUrlResponse>>() {
             }.getType();
-            rspStr = this.internalRequest(req, "/oneapi/avatar/cartoon");
+            rspStr = this.internalRequest(req, "/api/avatar/cartoon");
             rsp = gson.fromJson(rspStr, type);
         } catch (JsonSyntaxException e) {
             throw new OneAPISDKException("response message: " + rspStr + ".\n Error message: " + e.getMessage());

@@ -4,6 +4,8 @@ package top.charjin.oneapi.clientsdk;
 import cn.hutool.crypto.SignUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 import okhttp3.Headers;
 import okhttp3.Response;
 import top.charjin.oneapi.clientsdk.exception.OneAPISDKException;
@@ -12,6 +14,7 @@ import top.charjin.oneapi.clientsdk.profile.ClientProfile;
 import top.charjin.oneapi.clientsdk.profile.HttpProfile;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
@@ -130,16 +133,30 @@ public abstract class AbstractClient {
             throw new OneAPISDKException(e.getClass().getName() + "-" + e.getMessage());
         }
         if (okRsp.code() != AbstractClient.HTTP_RSP_OK) {
-            throw new OneAPISDKException("response code is " + okRsp.code() + ", not 200", "", "ServerSideError");
+            throw new OneAPISDKException(okRsp.message(), String.valueOf(okRsp.code()));
         }
         String strResp = "";
+
         try {
             if (okRsp.body() != null) {
                 strResp = okRsp.body().string();
             }
         } catch (IOException e) {
             throw new OneAPISDKException("Cannot transfer response body to string, because Content-Length is too large, or Content-Length and stream length disagree.",
-                    "", endpoint.getClass().getName());
+                    endpoint.getClass().getName());
+        }
+
+        JsonResponseModel<JsonResponseErrModel> errResp = null;
+        try {
+            Type errType = new TypeToken<JsonResponseModel<JsonResponseErrModel>>() {
+            }.getType();
+            errResp = gson.fromJson(strResp, errType);
+        } catch (JsonSyntaxException e) {
+            String msg = "json is not a valid representation for an object of type";
+            throw new OneAPISDKException(msg, e.getClass().getName());
+        }
+        if (errResp.response.error != null) {
+            throw new OneAPISDKException(errResp.response.error.message, errResp.response.error.code);
         }
         return strResp;
     }
@@ -190,13 +207,21 @@ public abstract class AbstractClient {
         if (reqMethod.equals(HttpProfile.REQ_GET)) {
             return this.httpConnection.getRequest(url + "?" + strParam, headers);
         } else if (reqMethod.equals(HttpProfile.REQ_POST)) {
-            return this.httpConnection.postRequest(url, strParam, headers);
+            return this.httpConnection.postRequest(url, requestPayload, headers);
         } else {
             throw new OneAPISDKException("Method only support (GET, POST)");
         }
     }
 
-    private String getCanonicalQueryString(HashMap<String, String> params, String method) throws OneAPISDKException {
+
+    /**
+     * 生成规范化请求字符串
+     *
+     * @param params
+     * @param method
+     * @return
+     */
+    private String getCanonicalQueryString(HashMap<String, String> params, String method) {
         if (method != null && method.equals(HttpProfile.REQ_POST)) {
             return "";
         }
@@ -212,6 +237,13 @@ public abstract class AbstractClient {
         }
     }
 
+
+    /**
+     * 将请求参数转为规范化的字符串（不考虑 GET 或者 POST）
+     *
+     * @param param
+     * @return
+     */
     private String formatRequestData(Map<String, String> param) {
         if (param.size() == 0) {
             return "";

@@ -4,7 +4,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class JsonResponseModel<T> {
-    @SerializedName("Response")
+    @SerializedName("response")
     @Expose
     public T response;
 }
