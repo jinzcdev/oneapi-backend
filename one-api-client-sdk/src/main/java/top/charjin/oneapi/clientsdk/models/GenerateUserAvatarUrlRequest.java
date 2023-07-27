@@ -8,17 +8,17 @@ import java.util.HashMap;
 
 
 /**
- * 生成卡通头像响应
- * avatarUrl: 头像地址
+ * 生成人物头像请求
+ * 无参数
  */
-public class GenerateCartoonAvatarUrlResponse extends AbstractModel {
+public class GenerateUserAvatarUrlRequest extends AbstractModel {
 
-    @SerializedName("avatarUrl")
     @Expose
-    private String avatarUrl;
+    @SerializedName("gender")
+    private String gender;
 
     @Override
     protected void toMap(HashMap<String, String> map, String prefix) {
-        this.setParamSimple(map, prefix + "avatarUrl", this.avatarUrl);
+        this.setParamSimple(map, prefix + "gender", this.gender);
     }
 }

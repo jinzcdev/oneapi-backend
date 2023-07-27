@@ -8,10 +8,10 @@ import java.util.HashMap;
 
 
 /**
- * 生成卡通头像响应
- * avatarUrl: 头像地址
+ * 生成人物头像响应
+ * AvatarUrl: 头像地址
  */
-public class GenerateCartoonAvatarUrlResponse extends AbstractModel {
+public class GenerateUserAvatarUrlResponse extends AbstractModel {
 
     @SerializedName("avatarUrl")
     @Expose
