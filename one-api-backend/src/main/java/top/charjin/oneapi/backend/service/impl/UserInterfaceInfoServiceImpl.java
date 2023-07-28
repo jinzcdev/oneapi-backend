@@ -67,7 +67,7 @@ public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoM
         if (userInterfaceInfo == null) {
             return 0;
         } else {
-            return userInterfaceInfo.getTotalNum();
+            return userInterfaceInfo.getLeftNum();
         }
     }
 
