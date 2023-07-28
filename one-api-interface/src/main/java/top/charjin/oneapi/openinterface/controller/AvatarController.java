@@ -2,7 +2,10 @@ package top.charjin.oneapi.openinterface.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import top.charjin.oneapi.common.model.BaseResponse;
 import top.charjin.oneapi.common.model.ErrorCode;
 import top.charjin.oneapi.common.util.ResultUtils;
@@ -29,9 +32,8 @@ public class AvatarController {
         String avatarUrl = "";
         try {
             avatarUrl = avatarService.getCartoonAvatarUrl();
-            System.out.println(avatarUrl);
         } catch (IOException e) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "接口地址失效");
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "第三方接口地址失效");
         }
         return ResultUtils.success(new CartoonAvatarUrlVO(avatarUrl));
     }
@@ -49,14 +51,9 @@ public class AvatarController {
         try {
             avatarUrl = avatarService.getUserAvatarUrl(gender);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "第三方接口地址失效");
         }
         return ResultUtils.success(new UserAvatarUrlVO(avatarUrl));
     }
 
-    @ExceptionHandler(Exception.class)
-    private String exceptionHandler(Exception e) {
-        log.error(e.getMessage());
-        return e.getMessage();
-    }
 }
