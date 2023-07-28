@@ -247,7 +247,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         queryWrapper.eq("accessKey", accessKey);
         User user = this.getOne(queryWrapper);
         if (user == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "accessKey不存在");
+            return null;
         }
         AuthUserVO authUser = new AuthUserVO();
         authUser.setId(user.getId());
