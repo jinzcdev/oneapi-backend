@@ -30,9 +30,9 @@ public class OneAPISDKException extends Exception {
 
     public String toString() {
         return "[OneAPISDKException]"
-                + "code: "
+                + " code: "
                 + this.getErrorCode()
-                + " message:"
+                + " message: "
                 + this.getMessage();
     }
 }

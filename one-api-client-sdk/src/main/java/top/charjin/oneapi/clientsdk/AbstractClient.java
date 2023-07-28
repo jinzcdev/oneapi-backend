@@ -14,7 +14,6 @@ import top.charjin.oneapi.clientsdk.profile.ClientProfile;
 import top.charjin.oneapi.clientsdk.profile.HttpProfile;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
@@ -132,6 +131,7 @@ public abstract class AbstractClient {
         } catch (IOException e) {
             throw new OneAPISDKException(e.getClass().getName() + "-" + e.getMessage());
         }
+        // 处理 HTTP 请求响应
         if (okRsp.code() != AbstractClient.HTTP_RSP_OK) {
             throw new OneAPISDKException(okRsp.message(), String.valueOf(okRsp.code()));
         }
@@ -146,17 +146,18 @@ public abstract class AbstractClient {
                     endpoint.getClass().getName());
         }
 
-        JsonResponseModel<JsonResponseErrModel> errResp = null;
+
+        // 处理响应结果
+        JsonResponseModel<Object> respObj = null;
         try {
-            Type errType = new TypeToken<JsonResponseModel<JsonResponseErrModel>>() {
-            }.getType();
-            errResp = gson.fromJson(strResp, errType);
+            respObj = gson.fromJson(strResp, new TypeToken<JsonResponseModel<Object>>() {
+            }.getType());
         } catch (JsonSyntaxException e) {
             String msg = "json is not a valid representation for an object of type";
             throw new OneAPISDKException(msg, e.getClass().getName());
         }
-        if (errResp.response.error != null) {
-            throw new OneAPISDKException(errResp.response.error.message, errResp.response.error.code);
+        if (respObj.getCode() != HTTP_RSP_OK) {
+            throw new OneAPISDKException(respObj.getMessage(), String.valueOf(respObj.getCode()));
         }
         return strResp;
     }
