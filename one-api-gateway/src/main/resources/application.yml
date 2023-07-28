@@ -2,16 +2,6 @@ server:
   port: 8090
 
 
-spring:
-  cloud:
-    gateway:
-      routes:
-        - id: oneapi_route
-          uri: http://localhost:7089
-          predicates:
-            - Path=/oneapi/**
-
-
 logging:
   level:
     org:
@@ -28,9 +18,3 @@ dubbo:
     port: -1
   registry:
     address: nacos://localhost:8848
-#    zookeeper://${zookeeper.address:127.0.0.1}:2181
-
-
-#dubbo:
-#  registry:
-#    address: nacos://localhost:8848
