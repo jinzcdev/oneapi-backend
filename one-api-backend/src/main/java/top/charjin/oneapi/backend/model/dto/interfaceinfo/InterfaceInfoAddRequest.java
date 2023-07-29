@@ -32,6 +32,10 @@ public class InterfaceInfoAddRequest implements Serializable {
      */
     private String url;
     /**
+     * 接口方法名称
+     */
+    private String action;
+    /**
      * 请求参数说明
      */
     private String requestParams;
