@@ -10,13 +10,17 @@ import org.springframework.web.bind.annotation.*;
 import top.charjin.oneapi.backend.annotation.AuthCheck;
 import top.charjin.oneapi.backend.constant.UserConstant;
 import top.charjin.oneapi.backend.exception.BusinessException;
+import top.charjin.oneapi.backend.exception.OneAPIParseException;
 import top.charjin.oneapi.backend.exception.ThrowUtils;
 import top.charjin.oneapi.backend.model.dto.interfaceinfo.InterfaceInfoAddRequest;
 import top.charjin.oneapi.backend.model.dto.interfaceinfo.InterfaceInfoInvokeRequest;
 import top.charjin.oneapi.backend.model.dto.interfaceinfo.InterfaceInfoQueryRequest;
 import top.charjin.oneapi.backend.model.dto.interfaceinfo.InterfaceInfoUpdateRequest;
 import top.charjin.oneapi.backend.service.InterfaceInfoService;
+import top.charjin.oneapi.backend.service.InterfaceInvokerService;
 import top.charjin.oneapi.backend.service.UserService;
+import top.charjin.oneapi.clientsdk.Credential;
+import top.charjin.oneapi.clientsdk.exception.OneAPISDKException;
 import top.charjin.oneapi.common.constant.CommonConstant;
 import top.charjin.oneapi.common.model.BaseResponse;
 import top.charjin.oneapi.common.model.ErrorCode;
@@ -29,9 +33,8 @@ import top.charjin.oneapi.common.model.vo.InterfaceInfoVO;
 import top.charjin.oneapi.common.util.ResultUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 import static top.charjin.oneapi.backend.constant.UserConstant.USER_LOGIN_STATE;
 
@@ -46,6 +49,9 @@ public class InterfaceInfoController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private InterfaceInvokerService interfaceInvokerService;
 
     @PostMapping("/add")
     public BaseResponse<Long> addInterfaceInfo(@RequestBody InterfaceInfoAddRequest interfaceInfoAddRequest, HttpServletRequest request) {
@@ -127,6 +133,20 @@ public class InterfaceInfoController {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
         return ResultUtils.success(interfaceInfoService.getInterfaceInfoVO(interfaceInfo, request));
+    }
+
+    @GetMapping("/list/vo")
+    public BaseResponse<List<InterfaceInfoVO>> listInterfaceInfoVO() {
+        List<InterfaceInfo> list = interfaceInfoService.list();
+
+        List<InterfaceInfoVO> infoVOList = list.stream().map(e -> {
+            InterfaceInfoVO interfaceInfoVO = new InterfaceInfoVO();
+            interfaceInfoVO.setId(e.getId());
+            interfaceInfoVO.setName(e.getName());
+            return interfaceInfoVO;
+        }).collect(Collectors.toList());
+
+        return ResultUtils.success(infoVOList);
     }
 
     /**
@@ -254,26 +274,20 @@ public class InterfaceInfoController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口已关闭");
         }
 
-        User loginUser = userService.getLoginUser(request);
-        // 获取用户的 ak 与 sk
-        String accessKey = loginUser.getAccessKey();
-        String secretKey = loginUser.getSecretKey();
 
-        String url = interfaceInfo.getUrl();
-        String requestMethod = interfaceInfo.getMethod();
-        // todo 通过反射调用 SDK
-        return ResultUtils.error(ErrorCode.PARAMS_ERROR, "请求方法有误！");
-    }
-
-
-    @GetMapping("/interfaceNameList")
-    public BaseResponse<Map> interfaceNameList() {
-        List<InterfaceInfo> list = interfaceInfoService.list();
-        Map interfaceNameMap = new HashMap();
-        for (InterfaceInfo interfaceInfo : list) {
-            String name = interfaceInfo.getName();
-            interfaceNameMap.put(interfaceInfo.getName(), interfaceInfo.getName());
+        // todo 在前端在线调用接口也可以不视作用户的实际调用次数，而是作为接口调用测试，可以添加临时的方式密钥
+        String response = null;
+        try {
+            String accessKey = currentUser.getAccessKey();
+            String secretKey = currentUser.getSecretKey();
+            Credential credential = new Credential(accessKey, secretKey);
+            response = interfaceInvokerService.invoke(id, requestParams, credential);
+        } catch (OneAPIParseException e) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, e.getMessage());
+        } catch (OneAPISDKException e) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, e.getMessage());
         }
-        return ResultUtils.success(interfaceNameMap);
+
+        return ResultUtils.success(response);
     }
 }
