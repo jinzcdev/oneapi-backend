@@ -177,6 +177,10 @@ public abstract class AbstractClient {
         String accessKey = this.credential.getAccessKey();
         String secretKey = this.credential.getSecretKey();
 
+        if (accessKey == null || secretKey == null) {
+            throw new OneAPISDKException("Invalid credential, accessKey or secretKey is null.");
+        }
+
         // 生成规范化请求字符串
         String canonicalQueryString = this.getCanonicalQueryString(params, httpRequestMethod);
         // 创建时间戳、随机数

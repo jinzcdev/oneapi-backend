@@ -11,7 +11,7 @@ import top.charjin.oneapi.clientsdk.client.OneApiClient;
 @Configuration
 @ComponentScan
 @ConfigurationProperties("oneapi.client")
-public class OneApiClientSdkConfig {
+public class OneApiClientAutoConfiguration {
     private String accessKey;
     private String secretKey;
 
