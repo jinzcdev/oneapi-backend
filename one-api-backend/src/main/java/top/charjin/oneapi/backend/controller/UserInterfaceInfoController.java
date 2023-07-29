@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import top.charjin.oneapi.backend.annotation.AuthCheck;
 import top.charjin.oneapi.backend.constant.UserConstant;
@@ -15,6 +14,7 @@ import top.charjin.oneapi.backend.exception.BusinessException;
 import top.charjin.oneapi.backend.model.dto.userInterfaceInfo.UserInterfaceInfoAddRequest;
 import top.charjin.oneapi.backend.model.dto.userInterfaceInfo.UserInterfaceInfoQueryRequest;
 import top.charjin.oneapi.backend.model.dto.userInterfaceInfo.UserInterfaceInfoUpdateRequest;
+import top.charjin.oneapi.backend.model.dto.userInterfaceInfo.UserInterfaceRechargeRequest;
 import top.charjin.oneapi.backend.service.InterfaceInfoService;
 import top.charjin.oneapi.backend.service.UserInterfaceInfoService;
 import top.charjin.oneapi.backend.service.UserService;
@@ -58,14 +58,20 @@ public class UserInterfaceInfoController {
      * @return
      */
     @PostMapping("/add")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Long> addUserInterfaceInfo(@RequestBody UserInterfaceInfoAddRequest userInterfaceInfoAddRequest, HttpServletRequest request) {
         if (userInterfaceInfoAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         UserInterfaceInfo userInterfaceInfo = new UserInterfaceInfo();
         BeanUtils.copyProperties(userInterfaceInfoAddRequest, userInterfaceInfo);
+
+        long count = userInterfaceInfoService.count(new QueryWrapper<>(userInterfaceInfo));
+        if (count != 0) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "用户已开通该接口");
+        }
+
         // 校验
+        userInterfaceInfo.setLeftNum(200); // 默认免费调用200次
         userInterfaceInfoService.validUserInterfaceInfo(userInterfaceInfo, true);
         User loginUser = userService.getLoginUser(request);
         userInterfaceInfo.setUserId(loginUser.getId());
@@ -73,8 +79,7 @@ public class UserInterfaceInfoController {
         if (!result) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR);
         }
-        long newUserInterfaceInfoId = userInterfaceInfo.getId();
-        return ResultUtils.success(newUserInterfaceInfoId);
+        return ResultUtils.success(userInterfaceInfo.getId());
     }
 
     /**
@@ -188,38 +193,6 @@ public class UserInterfaceInfoController {
         return ResultUtils.success(userInterfaceInfoPage);
     }
 
-
-    @Transactional
-    @PostMapping("/payInterface")
-    public BaseResponse<Object> payInterface(String interfaceName, String adminPsd, String payAccount, int num) {
-
-        LambdaQueryWrapper<InterfaceInfo> lqw = new LambdaQueryWrapper<InterfaceInfo>();
-        lqw.eq(InterfaceInfo::getName, interfaceName);
-        InterfaceInfo interfaceInfo = interfaceInfoService.getOne(lqw);
-
-        LambdaQueryWrapper<User> lqw1 = new LambdaQueryWrapper<User>();
-        lqw1.eq(User::getUserAccount, payAccount);
-        User user = userService.getOne(lqw1);
-        if (user == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在");
-        }
-        LambdaQueryWrapper<UserInterfaceInfo> lqw2 = new LambdaQueryWrapper<UserInterfaceInfo>();
-        lqw2.eq(UserInterfaceInfo::getUserId, user.getId());
-        lqw2.eq(UserInterfaceInfo::getInterfaceInfoId, interfaceInfo.getId());
-        UserInterfaceInfo one = userInterfaceInfoService.getOne(lqw2);
-        if (one != null) {
-            one.setLeftNum(one.getLeftNum() + num);
-            userInterfaceInfoService.saveOrUpdate(one);
-        } else {
-            UserInterfaceInfo userInterfaceInfo = new UserInterfaceInfo();
-            userInterfaceInfo.setUserId(user.getId());
-            userInterfaceInfo.setInterfaceInfoId(interfaceInfo.getId());
-            userInterfaceInfo.setLeftNum(num);
-            userInterfaceInfoService.save(userInterfaceInfo);
-        }
-        return ResultUtils.success(true);
-    }
-
     @GetMapping("/selfInterfaceData")
     public BaseResponse<List<SelfInterfaceDateVo>> selfInterfaceData(HttpServletRequest request) {
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
@@ -248,6 +221,38 @@ public class UserInterfaceInfoController {
     public BaseResponse<List<InterfaceInvokeInfoVo>> getInterfaceStatistics() {
         List<InterfaceInvokeInfoVo> invokeInfoVoList = this.userInterfaceInfoService.getInterfaceInvokeInfoVoList();
         return ResultUtils.success(invokeInfoVoList);
+    }
+
+    @PostMapping("/recharge")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> rechargeUserInterfaceInvokeCount(@RequestBody UserInterfaceRechargeRequest rechargeRequest) {
+        if (rechargeRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        String userAccount = rechargeRequest.getUserAccount();
+        Long interfaceInfoId = rechargeRequest.getInterfaceId();
+        int rechargeCount = rechargeRequest.getRechargeCount();
+
+        // 先根据用户名判断用户是否存在，然后在 UserInterfaceInfo 中查看是否存在该记录，如果不存在则插入，如果存在则修改
+        User user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount));
+        if (user == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在");
+        }
+        UserInterfaceInfo userInterfaceInfo = userInterfaceInfoService.getOne(
+                new QueryWrapper<UserInterfaceInfo>()
+                        .eq("userId", user.getId())
+                        .eq("interfaceInfoId", interfaceInfoId));
+        if (userInterfaceInfo == null) {
+            userInterfaceInfo = new UserInterfaceInfo();
+            userInterfaceInfo.setUserId(user.getId());
+            userInterfaceInfo.setInterfaceInfoId(interfaceInfoId);
+            userInterfaceInfo.setLeftNum(rechargeCount);
+            userInterfaceInfoService.save(userInterfaceInfo);
+        } else {
+            userInterfaceInfo.setLeftNum(userInterfaceInfo.getLeftNum() + rechargeCount);
+            userInterfaceInfoService.updateById(userInterfaceInfo);
+        }
+        return ResultUtils.success(true);
     }
 
 }

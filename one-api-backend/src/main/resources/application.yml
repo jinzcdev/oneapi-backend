@@ -68,9 +68,3 @@ dubbo:
     port: -1
   registry:
     address: nacos://localhost:8848
-
-#    zookeeper://${zookeeper.address:127.0.0.1}:2181
-
-#dubbo:
-#  registry:
-#    address: nacos://localhost:8848

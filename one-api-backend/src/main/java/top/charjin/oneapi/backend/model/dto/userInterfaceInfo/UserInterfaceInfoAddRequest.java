@@ -22,15 +22,4 @@ public class UserInterfaceInfoAddRequest implements Serializable {
      */
     private Long interfaceInfoId;
 
-    /**
-     * 总调用次数
-     */
-    private Integer totalNum;
-
-    /**
-     * 剩余调用次数
-     */
-    private Integer leftNum;
-
-
 }
