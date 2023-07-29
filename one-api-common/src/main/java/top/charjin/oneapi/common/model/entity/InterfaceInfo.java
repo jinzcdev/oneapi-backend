@@ -37,6 +37,12 @@ public class InterfaceInfo implements Serializable {
      * 主机名
      */
     private String host;
+
+    /**
+     * 接口方法名称
+     */
+    private String action;
+
     /**
      * 请求参数
      */
