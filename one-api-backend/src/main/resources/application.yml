@@ -22,26 +22,13 @@ spring:
     username: root
     password: root
   # Redis 配置
-  # todo 需替换配置，然后取消注释
-  #  redis:
-  #    database: 1
-  #    host: localhost
-  #    port: 6379
-  #    timeout: 5000
-  #    password: 123456
-  # Elasticsearch 配置
-  # todo 需替换配置，然后取消注释
-  #  elasticsearch:
-  #    uris: http://localhost:9200
-  #    username: root
-  #    password: 123456
+
   # 文件上传
   servlet:
     multipart:
       # 大小限制
       max-file-size: 10MB
 server:
-  address: 0.0.0.0
   port: 8101
   servlet:
     context-path: /api
@@ -58,7 +45,6 @@ mybatis-plus:
       logic-delete-field: isDelete # 全局逻辑删除的实体字段名
       logic-delete-value: 1 # 逻辑已删除值（默认为 1）
       logic-not-delete-value: 0 # 逻辑未删除值（默认为 0）
-
 
 dubbo:
   application:

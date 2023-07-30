@@ -96,12 +96,6 @@ public class HttpProfile {
     /**
      * Set the endpoint.
      *
-     * <p>Endpoint means the domain which this request is sent to, such as
-     * [productName].tencentcloudapi.com.
-     *
-     * <p>If you want to request to a specified region, such as Guangzhou, set it to
-     * [productName].ap-guangzhou.tencentcloudapi.com.
-     *
      * @param endpoint
      */
     public void setEndpoint(String endpoint) {
