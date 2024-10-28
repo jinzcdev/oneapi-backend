@@ -7,4 +7,8 @@ public class OneAPIParseException extends Exception {
         super(message);
     }
 
+    public OneAPIParseException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }

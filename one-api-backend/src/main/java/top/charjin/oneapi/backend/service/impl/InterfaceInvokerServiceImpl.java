@@ -85,7 +85,7 @@ public class InterfaceInvokerServiceImpl implements InterfaceInvokerService {
             respStr = AbstractModel.toJsonString(resp);
         } catch (ClassNotFoundException | MethodNotFoundException | IllegalAccessException |
                  NoSuchMethodException e) {
-            throw new OneAPIParseException("SDK版本未更新，内部接口解析失败");
+            throw new OneAPIParseException("SDK版本未更新，内部接口解析失败", e);
         } catch (InvocationTargetException e) {
             // 反射调用的方法抛出异常为 InvocationTargetException
             // 通过 getTargetException() 获取原始异常 OneAPISDKException
