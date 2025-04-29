@@ -1,8 +1,12 @@
 # OneAPI 开放平台
 
-> 该项目目前已经上线：<https://oneapi.charjin.top>，对应的前端项目地址在[此处](https://github.com/jinzcdev/oneapi-frontend)
+> [!TIP]
+> 
+> **因资源有限，该项目已下线**
+> 
+> ~~该项目目前已经上线：<https://oneapi.charjin.top>，对应的前端项目地址在[此处](https://github.com/jinzcdev/oneapi-frontend)~~
 >
-> 管理员/普通用户：admin/user 密码：12345678
+> ~~管理员/普通用户：admin/user 密码：12345678~~
 
 <p align="center">
   <img style="width: 95%;" src="https://raw.githubusercontent.com/jinzcdev/oneapi-backend/main/docs/imgs/oneapi.png" alt="OneAPI">
